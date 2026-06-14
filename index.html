@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Système de Gestion</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo">⚡ SysBoard</span>
+      <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    </div>
+    <nav>
+      <a class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+        <span class="nav-icon">📊</span><span class="nav-label">Tableau de bord</span>
+      </a>
+      <a class="nav-item" data-page="tasks" onclick="showPage('tasks')">
+        <span class="nav-icon">✅</span><span class="nav-label">Tâches</span>
+      </a>
+      <a class="nav-item" data-page="projects" onclick="showPage('projects')">
+        <span class="nav-icon">📁</span><span class="nav-label">Projets</span>
+      </a>
+      <a class="nav-item" data-page="analytics" onclick="showPage('analytics')">
+        <span class="nav-icon">📈</span><span class="nav-label">Analytiques</span>
+      </a>
+      <a class="nav-item" data-page="monitoring" onclick="showPage('monitoring')">
+        <span class="nav-icon">🖥️</span><span class="nav-label">Monitoring</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main" id="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title" id="page-title">Tableau de bord</h1>
+      </div>
+      <div class="topbar-right">
+        <span class="date-display" id="date-display"></span>
+        <div class="avatar">SB</div>
+      </div>
+    </header>
+
+    <!-- Dashboard Page -->
+    <section class="page active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-icon">📋</div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-total-tasks">0</span>
+            <span class="stat-label">Tâches totales</span>
+          </div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-done-tasks">0</span>
+            <span class="stat-label">Tâches terminées</span>
+          </div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-pending-tasks">0</span>
+            <span class="stat-label">En cours</span>
+          </div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon">📁</div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-projects">0</span>
+            <span class="stat-label">Projets actifs</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <h2 class="card-title">Progression des tâches</h2>
+          <canvas id="taskProgressChart"></canvas>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Tâches récentes</h2>
+          <ul class="recent-list" id="recent-tasks-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tasks Page -->
+    <section class="page" id="page-tasks">
+      <div class="page-actions">
+        <button class="btn btn-primary" onclick="openTaskModal()">+ Nouvelle tâche</button>
+        <div class="filter-group">
+          <select id="filter-status" onchange="renderTasks()">
+            <option value="all">Tous</option>
+            <option value="todo">À faire</option>
+            <option value="inprogress">En cours</option>
+            <option value="done">Terminé</option>
+          </select>
+          <select id="filter-priority" onchange="renderTasks()">
+            <option value="all">Toutes priorités</option>
+            <option value="high">Haute</option>
+            <option value="medium">Moyenne</option>
+            <option value="low">Basse</option>
+          </select>
+        </div>
+      </div>
+      <div class="task-list" id="task-list"></div>
+    </section>
+
+    <!-- Projects Page -->
+    <section class="page" id="page-projects">
+      <div class="page-actions">
+        <button class="btn btn-primary" onclick="openProjectModal()">+ Nouveau projet</button>
+      </div>
+      <div class="project-grid" id="project-grid"></div>
+    </section>
+
+    <!-- Analytics Page -->
+    <section class="page" id="page-analytics">
+      <div class="analytics-grid">
+        <div class="card">
+          <h2 class="card-title">Tâches par priorité</h2>
+          <canvas id="priorityChart"></canvas>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Activité hebdomadaire</h2>
+          <canvas id="weeklyChart"></canvas>
+        </div>
+        <div class="card full-width">
+          <h2 class="card-title">Progression des projets</h2>
+          <div id="project-progress-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Monitoring Page -->
+    <section class="page" id="page-monitoring">
+      <div class="monitoring-grid">
+        <div class="card monitor-card">
+          <h2 class="card-title">CPU</h2>
+          <div class="gauge-wrap">
+            <canvas id="cpuGauge"></canvas>
+            <div class="gauge-value" id="cpu-val">--</div>
+          </div>
+          <div class="monitor-history">
+            <canvas id="cpuHistory"></canvas>
+          </div>
+        </div>
+        <div class="card monitor-card">
+          <h2 class="card-title">Mémoire RAM</h2>
+          <div class="gauge-wrap">
+            <canvas id="memGauge"></canvas>
+            <div class="gauge-value" id="mem-val">--</div>
+          </div>
+          <div class="monitor-history">
+            <canvas id="memHistory"></canvas>
+          </div>
+        </div>
+        <div class="card monitor-card">
+          <h2 class="card-title">Réseau</h2>
+          <div class="gauge-wrap">
+            <canvas id="netGauge"></canvas>
+            <div class="gauge-value" id="net-val">--</div>
+          </div>
+          <div class="monitor-history">
+            <canvas id="netHistory"></canvas>
+          </div>
+        </div>
+        <div class="card monitor-card">
+          <h2 class="card-title">Disque</h2>
+          <div class="gauge-wrap">
+            <canvas id="diskGauge"></canvas>
+            <div class="gauge-value" id="disk-val">--</div>
+          </div>
+          <div class="monitor-history">
+            <canvas id="diskHistory"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Task Modal -->
+  <div class="modal-overlay" id="task-modal" onclick="closeTaskModal(event)">
+    <div class="modal">
+      <h2>Nouvelle tâche</h2>
+      <form id="task-form" onsubmit="saveTask(event)">
+        <label>Titre<input type="text" id="task-title" required placeholder="Titre de la tâche" /></label>
+        <label>Description<textarea id="task-desc" placeholder="Description..."></textarea></label>
+        <div class="form-row">
+          <label>Priorité
+            <select id="task-priority">
+              <option value="high">Haute</option>
+              <option value="medium" selected>Moyenne</option>
+              <option value="low">Basse</option>
+            </select>
+          </label>
+          <label>Statut
+            <select id="task-status">
+              <option value="todo">À faire</option>
+              <option value="inprogress">En cours</option>
+              <option value="done">Terminé</option>
+            </select>
+          </label>
+        </div>
+        <label>Projet
+          <select id="task-project">
+            <option value="">Aucun projet</option>
+          </select>
+        </label>
+        <label>Échéance<input type="date" id="task-due" /></label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Project Modal -->
+  <div class="modal-overlay" id="project-modal" onclick="closeProjectModal(event)">
+    <div class="modal">
+      <h2>Nouveau projet</h2>
+      <form id="project-form" onsubmit="saveProject(event)">
+        <label>Nom<input type="text" id="project-name" required placeholder="Nom du projet" /></label>
+        <label>Description<textarea id="project-desc" placeholder="Description..."></textarea></label>
+        <div class="form-row">
+          <label>Couleur<input type="color" id="project-color" value="#4f46e5" /></label>
+          <label>Échéance<input type="date" id="project-due" /></label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeProjectModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
